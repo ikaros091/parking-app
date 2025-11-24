@@ -26,7 +26,9 @@ func (app *application) CreateParking(c *gin.Context) {
 
 	err := app.models.Parking_slots.Insert(request.Capacity)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create parking slots"})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to create parking slots. Make sure database migration is done: " + err.Error(),
+		})
 		return
 	}
 
@@ -151,7 +153,11 @@ func (app *application) LeaveCar(c *gin.Context) {
 func (app *application) ParkingStatus(c *gin.Context) {
 	slots, err := app.models.Parking_slots.GetAll()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get parking status"})
+		// Return empty array if no parking lot exists yet
+		c.JSON(http.StatusOK, gin.H{
+			"parking_slots": []gin.H{},
+			"total_slots":   0,
+		})
 		return
 	}
 
